@@ -1,6 +1,8 @@
 %define haproxy_user    haproxy
 %define haproxy_group   %{haproxy_user}
 %define haproxy_home    %{_localstatedir}/lib/haproxy
+%define version 2.0.1
+%define release 1
 
 %if 0%{?rhel} == 6 && 0%{!?amzn1}
     %define dist .el6
