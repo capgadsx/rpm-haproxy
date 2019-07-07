@@ -4,41 +4,27 @@
 %define major_version 2.0
 %define version 2.0.1
 %define release 1
-%define dist .el7
 
 Summary: HA-Proxy is a TCP/HTTP reverse proxy for high availability environments
 Name: haproxy
 Version: %{version}
-Release: %{release}%{?dist}
+Release: %{release}.el7
 License: GPL
 Group: System Environment/Daemons
 URL: http://www.haproxy.org/
 Source0: https://www.haproxy.org/download/%{major_version}/src/%{name}-%{version}.tar.gz
 Source1: %{name}.cfg
-%if 0%{?el6} || 0%{?amzn1}
-Source2: %{name}.init
-%endif
-%{?el7:Source2: %{name}.service}
+Source2: %{name}.service
 Source3: %{name}.logrotate
-Source4: %{name}.syslog%{?dist}
+Source4: %{name}.syslog.el7
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: pcre-devel make gcc openssl-devel
-
 Requires(pre):      shadow-utils
 Requires:           rsyslog
-
-%if 0%{?el6} || 0%{?amzn1}
-Requires(post):     chkconfig, initscripts
-Requires(preun):    chkconfig, initscripts
-Requires(postun):   initscripts
-%endif
-
-%if 0%{?el7} || 0%{?amzn2}
 BuildRequires:      systemd-units systemd-devel
 Requires(post):     systemd
 Requires(preun):    systemd
 Requires(postun):   systemd
-%endif
 
 %description
 HA-Proxy is a TCP/HTTP reverse proxy which is particularly suited for high
@@ -75,16 +61,10 @@ systemd_opts=
 pcre_opts="USE_PCRE=1"
 USE_TFO=
 USE_NS=
-
-%if 0%{?el7} || 0%{?amzn2}
 systemd_opts="USE_SYSTEMD=1"
 pcre_opts="USE_PCRE=1 USE_PCRE_JIT=1"
-%endif
-
-%if 0%{?el7} || 0%{?amzn2} || 0%{?amzn1}
 USE_TFO=1
 USE_NS=1
-%endif
 
 %{__make} -j$RPM_BUILD_NCPUS %{?_smp_mflags} CPU="generic" TARGET="linux-glibc" ${systemd_opts} ${pcre_opts} USE_OPENSSL=1 USE_ZLIB=1 ${regparm_opts} ADDINC="%{optflags}" USE_LINUX_TPROXY=1 USE_THREAD=1 USE_TFO=${USE_TFO} USE_NS=${USE_NS} ADDLIB="%{__global_ldflags}"
 
@@ -107,15 +87,8 @@ USE_NS=1
 %{__install} -c -m 755 %{SOURCE4} %{buildroot}%{_sysconfdir}/rsyslog.d/49-%{name}.conf
 %{__install} -c -m 755 %{SOURCE3} %{buildroot}%{_sysconfdir}/logrotate.d/%{name}
 
-%if 0%{?el6} || 0%{?amzn1}
-%{__install} -d %{buildroot}%{_sysconfdir}/rc.d/init.d
-%{__install} -c -m 755 %{SOURCE2} %{buildroot}%{_sysconfdir}/rc.d/init.d/%{name}
-%endif
-
-%if 0%{?el7} || 0%{?amzn2}
 %{__install} -s %{name} %{buildroot}%{_sbindir}/
 %{__install} -p -D -m 0644 %{SOURCE2} %{buildroot}%{_unitdir}/%{name}.service
-%endif
 
 %clean
 [ "%{buildroot}" != "/" ] && %{__rm} -rf %{buildroot}
@@ -129,40 +102,15 @@ getent passwd %{haproxy_user} >/dev/null || \
 exit 0
 
 %post
-%if 0%{?el7} || 0%{?amzn2}
 %systemd_post %{name}.service
 systemctl restart rsyslog.service
-%endif
-
-%if 0%{?el6} || 0%{?amzn1}
-/sbin/chkconfig --add %{name}
-/sbin/service rsyslog restart >/dev/null 2>&1 || :
-%endif
 
 %preun
-%if 0%{?el7} || 0%{?amzn2}
 %systemd_preun %{name}.service
-%endif
-
-%if 0%{?el6} || 0%{?amzn1}
-if [ $1 = 0 ]; then
-  /sbin/service %{name} stop >/dev/null 2>&1 || :
-  /sbin/chkconfig --del %{name}
-fi
-%endif
 
 %postun
-%if 0%{?el7} || 0%{?amzn2}
 %systemd_postun_with_restart %{name}.service
 systemctl restart rsyslog.service
-%endif
-
-%if 0%{?el6} || 0%{?amzn1}
-if [ "$1" -ge "1" ]; then
-  /sbin/service %{name} condrestart >/dev/null 2>&1 || :
-  /sbin/service rsyslog restart >/dev/null 2>&1 || :
-fi
-%endif
 
 %files
 %defattr(-,root,root)
@@ -185,6 +133,9 @@ fi
 %endif
 
 %changelog
+* Sat Jul 06 2019 Carlos Ponce <cponce@alumnos.inf.utfsm.cl>
+- Remove support for Amazon Linux and EL6
+
 * Tue Jun 18 2019 David Bezemer <info@davidbezemer.nl>
 - First build of HAproxy 2.0.0
 
