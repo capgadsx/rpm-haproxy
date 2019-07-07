@@ -1,6 +1,7 @@
 %define haproxy_user    haproxy
 %define haproxy_group   %{haproxy_user}
 %define haproxy_home    %{_localstatedir}/lib/haproxy
+%define major_version 2.0
 %define version 2.0.1
 %define release 1
 
@@ -24,7 +25,7 @@ Release: %{release}%{?dist}
 License: GPL
 Group: System Environment/Daemons
 URL: http://www.haproxy.org/
-Source0: http://www.haproxy.org/download/1.8/src/%{name}-%{version}.tar.gz
+Source0: https://www.haproxy.org/download/%{major_version}/src/%{name}-%{version}.tar.gz
 Source1: %{name}.cfg
 %if 0%{?el6} || 0%{?amzn1}
 Source2: %{name}.init
