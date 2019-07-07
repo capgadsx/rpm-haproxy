@@ -3,7 +3,7 @@
 %define haproxy_home    %{_localstatedir}/lib/haproxy
 %define major_version 2.0
 %define version 2.0.1
-%define release 1
+%define release 2
 
 Summary: HA-Proxy is a TCP/HTTP reverse proxy for high availability environments
 Name: haproxy
